@@ -1,6 +1,14 @@
 import React, { Component } from 'react';
 import './style.css'
 class OrderItem extends Component {
+    constructor(props){
+        super(props);
+        this.state={
+            editing:false,
+            stars:props.data.stars||0,
+            comment:props.data.comment || "",
+        }
+    }
     render() {
         const{ shop,product,price,picture,ifCommented}=this.props.data;
         return (
@@ -14,13 +22,76 @@ class OrderItem extends Component {
                     <div className='orderItem__detail'>
                         <div className='orderItem__price'>{price}</div>
                         <div>
-                            {ifCommented?(<button className='orderItem__btn orderItem__btn--grey'>已评价</button>):(<button className='orderItem__btn orderItem__btn--red'>评价</button>) }
+                            {ifCommented?(<button className='orderItem__btn orderItem__btn--grey'>已评价</button>):(<button className='orderItem__btn orderItem__btn--red' onClick={
+                                this.handleOpenEditArea
+                            }>评价</button>) }
                             
                             </div>
                     </div>
                 </div>
+                {this.state.editing?this.renderEditArea():null}
             </div>
         );
+    }
+    renderEditArea(){
+        return(
+            <div className='orderItem__commentContainer'>
+                <textarea onChange= {this.handeleCommentChange} value={this.state.comment}className='orderItem__comment'/>
+                {this.renderStarts()}
+                <button className='orderItem__btn orderItem__btn--red' onClick=
+                {this.handleSubmitComment}>提交</button>
+                <button className='orderItem__btn orderItem__btn--grey' onClick={
+                    this.handleCancelComment
+                }>取消</button>
+            </div>
+        )
+    }
+    renderStarts(){
+        const{stars}=this.state;
+        return(
+            <div>
+                {
+                  [1,2,3,4,5].map((item,index)=>{
+                      const light = stars>=item?
+                      "orderItem__star--light":"";
+                      return(
+                        <span className={"orderItem__star"+light} key={index} onClick={this.handleClickStars.bind(this,item)}>★</span>
+                      )
+                  })  
+                }
+            </div>
+            
+        )
+    }
+    handleOpenEditArea = ()=>{
+        this.setState({
+            editing:true
+        })
+    }
+    handeleCommentChange=(e)=>{
+        this.setState({
+            comment:e.target.value
+        })
+    }
+    handleClickStars=(stars)=>{
+        this.setState({
+            stars:stars
+        })
+    }
+    handleCancelComment=()=>{
+        this.setState({
+            editing:false,
+            stars:this.props.data.stars||0,
+            comment:this.props.data.comment || "",
+        })
+    }
+    handleSubmitComment=()=>{
+        const{id}=this.props.data;
+        const{comment,stars} = this.state;
+        this.setState({
+            editing:false
+        })
+        this.props.onSubmit(id,comment,stars)
     }
 }
 
